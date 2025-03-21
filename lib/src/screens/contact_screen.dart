@@ -1,5 +1,8 @@
 import 'package:chat/constants.dart';
+import 'package:chat/src/interfaces/contact_interface.dart';
+import 'package:chat/src/services/contact_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
@@ -10,7 +13,45 @@ class ContactScreen extends StatefulWidget {
 
 class _ContactScreenState extends State<ContactScreen> {
   final FocusNode _focusNode = FocusNode();
-  final List<Widget> contactList = [];
+  final List<Widget> Box = [];
+  final List<Contact> contactsList = [];
+  final _contactService = ContactService();
+
+  Future<void> _submitForm() async {
+    List<Contact> fetchedContacts = await _contactService
+        .showContact();
+    setState(() {
+      contactsList.addAll(fetchedContacts);
+    });
+  }
+
+  @override
+  void initState() {
+    _submitForm();
+    super.initState();
+  }
+
+  Widget contact(String? name, String? email) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/ChatScreen');
+      },
+      child: Container(
+        padding: EdgeInsets.all(10),
+        width: double.infinity,
+        height: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        child: Row(
+          children: [
+            Text(name!),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,31 +59,10 @@ class _ContactScreenState extends State<ContactScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final isDesktop = screenWidth > 600;
 
-    void contact() {
-      setState(() {
-        contactList.add(
-          GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(context, '/ChatScreen');
-            },
-            child: Container(
-              padding: EdgeInsets.all(10),
-              width: double.infinity,
-              height: 100,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border:
-                    Border.all(color: Theme.of(context).colorScheme.onSurface),
-              ),
-              child: Row(
-                children: [
-                  Text("Carlos"),
-                ],
-              ),
-            ),
-          ),
-        );
-      });
+    Future<void> logout() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      Navigator.pushReplacementNamed(context, '/');
     }
 
     return SafeArea(
@@ -80,7 +100,10 @@ class _ContactScreenState extends State<ContactScreen> {
                                   Icons.add,
                                   size: 40,
                                 ),
-                                onPressed: contact,
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                      context, '/NewContactScreen');
+                                },
                               ),
                               PopupMenuButton(
                                 icon: Icon(Icons.more_vert),
@@ -95,7 +118,8 @@ class _ContactScreenState extends State<ContactScreen> {
                                     value: "op2",
                                     child: Text("Configuração"),
                                     onTap: () {
-                                      Navigator.pushNamed(context, '/ConfigScreen');
+                                      Navigator.pushNamed(
+                                          context, '/ConfigScreen');
                                     },
                                   ),
                                   PopupMenuItem(
@@ -109,7 +133,7 @@ class _ContactScreenState extends State<ContactScreen> {
                                       style: TextStyle(color: Colors.red),
                                     ),
                                     onTap: () {
-                                      Navigator.pushReplacementNamed(context, '/');
+                                      logout();
                                     },
                                   ),
                                 ],
@@ -145,14 +169,12 @@ class _ContactScreenState extends State<ContactScreen> {
                           color: Theme.of(context).colorScheme.onPrimary,
                         ),
                         child: ListView.builder(
-                          itemCount:
-                              contactList.isEmpty ? 1 : contactList.length,
+                          itemCount: contactsList.length,
                           itemBuilder: (context, index) {
-                            return contactList.isEmpty
-                                ? Center(
-                                    child: Text("Adicione contatos"),
-                                  )
-                                : contactList[index];
+                            return contactsList.isEmpty
+                                ? Text("adicionar contato")
+                                : contact(contactsList[index].name,
+                                    contactsList[index].email);
                           },
                         ),
                       ),

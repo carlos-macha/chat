@@ -1,6 +1,10 @@
 import 'package:chat/constants.dart';
+import 'package:chat/src/interfaces/user_interface.dart';
 import 'package:chat/src/screens/create_account_screen.dart';
+import 'package:chat/src/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +23,29 @@ class _LoginScreenState extends State<LoginScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final isDesktop = screenWidth > 600;
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
+    final _authService = AuthService();
+
+    Future<void> _submitForm() async {
+      if (_formKey.currentState!.validate()) {
+        final userLogin = User(
+            email: _emailController.text, password: _passwordController.text);
+
+        String? token = await _authService.login(userLogin);
+
+        if (token != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', token);
+          print(token);
+
+          Navigator.pushReplacementNamed(context, '/ContactScreen');
+          print("Login bem-sucedido!");
+        } else {
+          print("Deu ruim no login");
+        }
+      }
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -58,12 +85,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(fontFamily: "Merienda"),
                       ),
                       TextFormField(
+                        controller: _emailController,
                         decoration: InputDecoration(
                           labelText: "Email",
                         ),
                         keyboardType: TextInputType.emailAddress,
                       ),
                       TextFormField(
+                        controller: _passwordController,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(_isObscured
@@ -85,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/ContactScreen');
+                            _submitForm();
                           },
                           child: Text('Entrar'),
                         ),

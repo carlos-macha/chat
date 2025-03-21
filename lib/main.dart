@@ -3,6 +3,8 @@ import 'package:chat/src/screens/config_screen.dart';
 import 'package:chat/src/screens/contact_screen.dart';
 import 'package:chat/src/screens/create_account_screen.dart';
 import 'package:chat/src/screens/login_screen.dart';
+import 'package:chat/src/screens/new_contact_screen.dart';
+import 'package:chat/src/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -55,15 +57,14 @@ class _MyAppState extends State<MyApp> {
       themeMode: _themeMode,
       initialRoute: "/",
       routes: {
-        "/": (context) => const LoginScreen(),
+        "/": (context) => const SplashScreen(),
+        "/LoginScreen": (context) => const LoginScreen(),
         "/ChatScreen": (context) => const ChatScreen(),
         "/ConfigScreen": (context) => ConfigScreen(
             isDarkMode: _themeMode == ThemeMode.dark, toggleTheme: _toggleTheme),
         "/ContactScreen": (context) => const ContactScreen(),
         "/CreateAccountScreen": (context) => const CreateAccountScreen(),
-        /*"/": (context) => const LoginScreen(),
-        "/": (context) => const LoginScreen(),
-        "/": (context) => const LoginScreen(),*/
+        "/NewContactScreen": (context) => const NewContactScreen(),
       },
     );
   }

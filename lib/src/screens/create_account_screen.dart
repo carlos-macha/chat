@@ -1,8 +1,8 @@
 import 'package:chat/constants.dart';
 import 'package:chat/src/interfaces/user_interface.dart';
 import 'package:chat/src/screens/login_screen.dart';
+import 'package:chat/src/services/auth_service.dart';
 import 'package:flutter/material.dart';
-import '../services/user_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -18,7 +18,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
-  final UserService _userService = UserService();
+  final _authService = AuthService();
   bool _isObscured = true;
 
   Future<void> _submitForm() async {
@@ -30,7 +30,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           password: _passwordController.text,
         );
 
-        bool success = await _userService.createUser(newUser);
+        bool success = await _authService.createUser(newUser);
 
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
