@@ -1,3 +1,5 @@
+import 'package:chat/src/interfaces/message_interface.dart';
+import 'package:chat/src/services/message_service.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 
@@ -11,6 +13,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _messageController = TextEditingController();
+  final MessageService _messageService = MessageService();
   final ScrollController _scrollController = ScrollController();
   List<Widget> messagesList = [];
   final AudioRecorder audioRecorder = AudioRecorder();
@@ -18,61 +21,85 @@ class _ChatScreenState extends State<ChatScreen> {
     @override
   void initState() {
     super.initState();
-    // Adiciona o listener para mudanças no texto
     _messageController.addListener(_updateIcon);
   }
 
   @override
   void dispose() {
-    // Remova o listener quando o widget for destruído
     _messageController.removeListener(_updateIcon);
     super.dispose();
   }
 
     void _updateIcon() {
-    setState(() {}); // Atualiza o ícone conforme a mudança no texto
+    setState(() {});
   }
 
-  void message(BuildContext context) {
+  Future<void> sendMessage(String contactEmail) async {
+    if (_formKey.currentState!.validate()) {
+      final newMessage = Message(
+        content: _messageController.text,
+        contactEmail: contactEmail
+      );
+
+    bool sucess = await _messageService.sendMessage(newMessage);
+
+    if(sucess) {
+      print("message sent");
+    } else {
+      print("message not sent");
+    }
+
+    }
+  }
+
+  void messageBox(BuildContext context) {
+    final contactEmail = ModalRoute.of(context)!.settings.arguments as String;
     final screenWidth = MediaQuery.of(context).size.width;
     final String messageText = _messageController.text.trim();
+ 
+    try {
+      sendMessage(contactEmail);
 
-    setState(() {
-      if (messageText.isNotEmpty) {
-        messagesList.add(
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: screenWidth * 0.8,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(0),
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
-                    ),
+      setState(() {
+        if (messageText.isNotEmpty) {
+          messagesList.add(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: screenWidth * 0.8,
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Text(
-                      messageText,
-                      style: TextStyle(
-                        fontSize: 15,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(0),
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text(
+                        messageText,
+                        style: TextStyle(
+                          fontSize: 15,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      }
-    });
+              ],
+            ),
+          );
+        }
+      });
+    } catch (error) {
+      print(error);
+    }
+
     _messageController.clear();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -152,7 +179,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         icon: Icon(_messageController.text.trim().isEmpty
                             ? Icons.mic
                             : Icons.send),
-                        onPressed: () => message(context),
+                        onPressed: () => messageBox(context),
                       ),
                       labelText: "Mensagem",
                       border: OutlineInputBorder(

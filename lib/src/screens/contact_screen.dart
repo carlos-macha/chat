@@ -34,7 +34,7 @@ class _ContactScreenState extends State<ContactScreen> {
   Widget contact(String? name, String? email) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/ChatScreen');
+        Navigator.pushNamed(context, '/ChatScreen', arguments: email);
       },
       child: Container(
         padding: EdgeInsets.all(10),
